@@ -16,6 +16,7 @@ volume_controller = f"{home}/.config/qtile/scripts/volume_controller"
 scaling_menu = f"{home}/.config/qtile/scripts/scaling_menu"
 toggle_compositor = f"{home}/.config/qtile/scripts/toggle_compositor"
 power_menu = f"{home}/.config/qtile/scripts/power_menu"
+help_menu = f"{home}/.config/qtile/scripts/show_help.sh"
 
 # set the varible apps
 term = "alacritty"

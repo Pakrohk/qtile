@@ -11,6 +11,10 @@
  - **Modern Clipboard**: Uses `cliphist` and `wl-copy` for Wayland clipboard management.
  - **Enhanced Stability**: Updated to use the latest Qtile APIs (e.g., `StatusNotifier` instead of `Systray` on Wayland).
  - **Robust Scripts**: Improved error handling and feature parity across backends.
+ - **Visual Polish**: Achieves a spacious, "spectrwm"-like feel with optimized margins and bar dimensions.
+ - **Dynamic Scaling**: On-the-fly DPI (X11) and Scaling (Wayland) adjustments via the bar.
+ - **Integrated Power Management**: Convenient menu for Lock, Sleep, Reboot, and Shutdown.
+ - **Interactive Help**: Quick access to all keybindings via the F1 menu.
 
  ## Requirements 
  To properly run this qtile configuration, please install the following dependencies:

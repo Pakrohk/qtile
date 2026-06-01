@@ -53,7 +53,7 @@ def on_screen_change():
 colors = Dracula()
 widgets_themes = dict(
     font="FantasqueSansMono Nerd Font Mono",
-    fontsize=16,  # Slightly smaller for a cleaner look
+    fontsize=14,  # Clean, spectrwm-like font size
 )
 
 # Merge the theme dictionary with the widgets_themes dictionary
@@ -81,11 +81,11 @@ group_mappings = init_app_rules()
 def init_bar():
     return bar.Bar(
         init_widgets(widgets_themes),
-        22,  # Slightly reduced height
-        opacity=0.95,  # Increased opacity for better legibility
+        28,  # Modern bar height
+        opacity=0.95,
         background=colors["background"],
         border_width=0,
-        margin=[0, 0, 0, 0],  # Flush with top for a more traditional tiled look
+        margin=[0, 0, 0, 0],
     )
 
 
