@@ -48,7 +48,8 @@ def init_widgets(config: dict):
         widget.Net(),
     ]
 
-    if qtile.core.name == "wayland":
+    import os
+    if os.environ.get("WAYLAND_DISPLAY"):
         widgets.append(widget.StatusNotifier())
     else:
         widgets.append(

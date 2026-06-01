@@ -7,7 +7,7 @@ QUALITY=5
 COPY_SS=0
 SAVE_SS=0
 NAME_SS="$(date '+%Y%m%d-%H%M%S').png"
-SAVE_SS_DIR="$HOME/pics"
+SAVE_SS_DIR="$HOME/Pictures/Screenshots"
 
 while getopts :scxt:q:n:p: flag; do
     case "${flag}" in
@@ -22,11 +22,14 @@ while getopts :scxt:q:n:p: flag; do
     esac
 done
 
-# If -x or -c options are not given, set -c
-[ $SAVE_SS -eq 0 ] && [ $COPY_SS -eq 0 ] && COPY_SS=1
+# If -x or -c options are not given, set both for default behavior
+if [ $SAVE_SS -eq 0 ] && [ $COPY_SS -eq 0 ]; then
+    SAVE_SS=1
+    COPY_SS=1
+fi
 
-# If -x option is given and the path does not exist, create it
-[ $SAVE_SS -eq 1 ] && [ ! -d "${SAVE_SS_DIR}" ] && mkdir -p "${SAVE_SS_DIR}"
+# Ensure directory exists
+[ $SAVE_SS -eq 1 ] && mkdir -p "${SAVE_SS_DIR}"
 
 # Wait for the timer, if specified
 sleep "$TIMER"
@@ -56,12 +59,15 @@ else
     fi
 fi
 
-# Determine what to show in notification
+# Cleanup and Notification
+SHOW=""
 if [ $SAVE_SS -eq 1 ] && [ $COPY_SS -eq 1 ]; then
     SHOW="$(echo "${SAVE_SS_DIR}" | sed -e "s|${HOME}|~|g")/${NAME_SS} (+CLIPBOARD)"
 elif [ $SAVE_SS -eq 0 ] && [ $COPY_SS -eq 1 ]; then
-    rm "${SAVE_SS_DIR}/${NAME_SS}"
     SHOW="CLIPBOARD"
+    # Note: in this modernized script, we always save to a temp file first for Wayland/X11 consistency
+    # then copy and remove if SAVE_SS is 0.
+    rm "${SAVE_SS_DIR}/${NAME_SS}"
 elif [ $SAVE_SS -eq 1 ] && [ $COPY_SS -eq 0 ]; then
     SHOW="$(echo "${SAVE_SS_DIR}" | sed -e "s|${HOME}|~|g")/${NAME_SS}"
 fi

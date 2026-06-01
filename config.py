@@ -28,6 +28,7 @@ def autostart():
     # Notification daemon
     subprocess.Popen("dunst")
 
+    # Backend-specific startup
     if qtile.core.name == "x11":
         # Compositor
         subprocess.Popen(["picom", "-b"])

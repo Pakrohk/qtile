@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Unified Volume Controller (pactl)
+# Works for both X11 and Wayland via PipeWire/PulseAudio
+
 # Get the action from the first argument
 action="$1"
 
@@ -15,21 +18,12 @@ fi
 
 # Function to get current volume
 get_volume() {
-    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        # wpctl output example: "Volume: 0.45"
-        wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2 * 100)}'
-    else
-        amixer get Master | awk 'flag==1{exit} /%/ {print $5; flag=1}' | tr -d '[]%'
-    fi
+    pactl get-sink-volume @DEFAULT_SINK@ | grep -Po '[0-9]+(?=%)' | head -n 1
 }
 
 # Function to check if muted
 is_muted() {
-    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q "MUTED"
-    else
-        amixer get Master | grep -q "\[off\]"
-    fi
+    pactl get-sink-mute @DEFAULT_SINK@ | grep -q "yes"
 }
 
 # Function to notify
@@ -42,36 +36,19 @@ notify_vol() {
 
 case "$action" in
 "-u")
-    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$(awk "BEGIN {print $amount/100}")"+
-    else
-        amixer set Master "${amount}%+"
-    fi
+    pactl set-sink-volume @DEFAULT_SINK@ +"${amount}%"
     notify_vol "Increased to"
 	;;
 "-d")
-    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$(awk "BEGIN {print $amount/100}")"-
-    else
-        amixer set Master "${amount}%-"
-    fi
+    pactl set-sink-volume @DEFAULT_SINK@ -"${amount}%"
     notify_vol "Decreased to"
 	;;
 "-s")
-    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$(awk "BEGIN {print $amount/100}")"
-    else
-        amixer set Master "${amount}%"
-    fi
+    pactl set-sink-volume @DEFAULT_SINK@ "${amount}%"
     notify_vol "Set to"
 	;;
 "-t")
-    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-    else
-        amixer set Master toggle
-    fi
-
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
     if is_muted; then
 		notification_id=$(dunstify -u low -t 3000 -r 9991 'Volume' 'Muted')
 		echo "$notification_id" >/tmp/volume_notification_id

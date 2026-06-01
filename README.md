@@ -31,11 +31,16 @@
    - `grim` & `slurp` (for screenshots)
    - `wl-clipboard` (clipboard utilities)
    - `cliphist` (clipboard history)
+   - `wlr-randr` (for dynamic scaling)
 
  ### X11 Specific
    - `picom` (compositor)
    - `maim` & `xclip` (for screenshots and clipboard)
    - `rofi-greenclip` (clipboard history for X11)
+
+ ### Optional but Recommended
+   - `yad` (for professional Help menu)
+   - `pulseaudio-utils` (provides `pactl` for unified volume control)
 
 ## Install
  ```

@@ -1,9 +1,16 @@
 #!/bin/bash
 
-# Power Management Menu
+# Power Management Menu with Confirmation
 
 OPTIONS="Lock\nSleep\nReboot\nShutdown"
-CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -p "Power")
+CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -p "Power" -theme-str 'window {width: 15%;}')
+
+# Function for confirmation
+confirm_action() {
+    local action="$1"
+    local res=$(echo -e "No\nYes" | rofi -dmenu -p "Confirm $action?")
+    [ "$res" = "Yes" ]
+}
 
 case "$CHOICE" in
     "Lock")
@@ -17,12 +24,14 @@ case "$CHOICE" in
         systemctl suspend
         ;;
     "Reboot")
-        CONFIRM=$(echo -e "No\nYes" | rofi -dmenu -p "Confirm Reboot?")
-        [ "$CONFIRM" = "Yes" ] && systemctl reboot
+        if confirm_action "Reboot"; then
+            systemctl reboot
+        fi
         ;;
     "Shutdown")
-        CONFIRM=$(echo -e "No\nYes" | rofi -dmenu -p "Confirm Shutdown?")
-        [ "$CONFIRM" = "Yes" ] && systemctl poweroff
+        if confirm_action "Shutdown"; then
+            systemctl poweroff
+        fi
         ;;
     *)
         exit 1

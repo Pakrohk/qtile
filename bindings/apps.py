@@ -10,10 +10,12 @@ from .vars import (app_menu, browser, file_manager, home, print_screen,
 
 
 def init_apps_run():
-    if qtile.core.name == "wayland":
-        clipboard = "cliphist list | rofi -dmenu -p 'Clipboard' | cliphist decode | wl-copy"
-    else:
-        clipboard = 'rofi -modi "clipboard:greenclip print" -show clipboard'
+    # Use lazy.spawn with a shell conditional for clipboard to avoid load-time qtile.core issues
+    clipboard = (
+        "bash -c 'if [ \"$XDG_SESSION_TYPE\" = \"wayland\" ]; "
+        "then cliphist list | rofi -dmenu -p \"Clipboard\" | cliphist decode | wl-copy; "
+        "else rofi -modi \"clipboard:greenclip print\" -show clipboard; fi'"
+    )
 
     keys = [
         Key([super], "Return", lazy.spawn(term)),
@@ -26,8 +28,8 @@ def init_apps_run():
         Key([super], "q", lazy.spawn(qt5_config)),
         Key([super], "s", lazy.spawn(scaling_menu)),
         Key([super], "c", lazy.spawn(toggle_compositor)),
-        Key([], print_screen, lazy.spawn(f"{screenshot} -xc {home}/Pictures/")),
-        Key([super], print_screen, lazy.spawn(f"{screenshot} -xsc {home}/Pictures/")),
+        Key([], print_screen, lazy.spawn(f"{screenshot} -sc")),
+        Key(["shift"], print_screen, lazy.spawn(f"{screenshot}")),
     ]
 
     return keys
