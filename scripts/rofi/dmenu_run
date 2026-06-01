@@ -3,11 +3,4 @@
 # Define the theme path
 THEME="$HOME/.config/qtile/themes/rofi/dracula_demnu_style.rasi"
 
-# Check if running under Wayland
-if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-    # Use rofi-wayland if available, or just rofi if it's the wayland fork
-    rofi -show run -theme "$THEME"
-else
-    # X11
-    rofi -show run -theme "$THEME"
-fi
+rofi -show run -theme "$THEME"

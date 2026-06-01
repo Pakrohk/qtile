@@ -15,37 +15,64 @@ fi
 
 # Function to get current volume
 get_volume() {
-    amixer get Master | awk 'flag==1{exit} /%/ {print $5; flag=1}' | tr -d '[]'
+    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+        # wpctl output example: "Volume: 0.45"
+        wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2 * 100)}'
+    else
+        amixer get Master | awk 'flag==1{exit} /%/ {print $5; flag=1}' | tr -d '[]%'
+    fi
+}
+
+# Function to check if muted
+is_muted() {
+    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+        wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q "MUTED"
+    else
+        amixer get Master | grep -q "\[off\]"
+    fi
 }
 
 # Function to notify
 notify_vol() {
     local msg="$1"
     local vol=$(get_volume)
-    notification_id=$(dunstify -u low -t 3000 -r 9991 'Volume' "$msg $vol")
+    notification_id=$(dunstify -u low -t 3000 -r 9991 'Volume' "$msg $vol%")
     echo "$notification_id" >/tmp/volume_notification_id
 }
 
 case "$action" in
 "-u")
-	# Increase the volume by the given amount
-	amixer set Master "${amount}%+"
+    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$(awk "BEGIN {print $amount/100}")"+
+    else
+        amixer set Master "${amount}%+"
+    fi
     notify_vol "Increased to"
 	;;
 "-d")
-	# Decrease the volume by the given amount
-	amixer set Master "${amount}%-"
+    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$(awk "BEGIN {print $amount/100}")"-
+    else
+        amixer set Master "${amount}%-"
+    fi
     notify_vol "Decreased to"
 	;;
 "-s")
-	# Set the volume to the given value
-	amixer set Master "${amount}%"
+    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ "$(awk "BEGIN {print $amount/100}")"
+    else
+        amixer set Master "${amount}%"
+    fi
     notify_vol "Set to"
 	;;
 "-t")
-	# Toggle mute/unmute
-	amixer set Master toggle >/dev/null && sleep 0.1
-	if amixer get Master | grep -q "\[off\]"; then
+    if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+        wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    else
+        amixer set Master toggle
+    fi
+
+    if is_muted; then
 		notification_id=$(dunstify -u low -t 3000 -r 9991 'Volume' 'Muted')
 		echo "$notification_id" >/tmp/volume_notification_id
 	else
@@ -53,7 +80,7 @@ case "$action" in
 	fi
 	;;
 *)
-	echo "Usage: volume_controller.sh [-u | -d | -s | -t] [amount]"
+	echo "Usage: volume_controller [-u | -d | -s | -t] [amount]"
 	echo "-u: Increase volume by [amount] (default: 5)"
 	echo "-d: Decrease volume by [amount] (default: 5)"
 	echo "-s: Set volume to [amount]"

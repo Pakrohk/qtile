@@ -43,6 +43,12 @@ def autostart():
     subprocess.Popen("nm-applet")
 
 
+# Monitor hotplug handling
+@hook.subscribe.screen_change
+def on_screen_change():
+    qtile.reconfigure_screens()
+
+
 # Set your default widget styles
 colors = Dracula()
 widgets_themes = dict(
