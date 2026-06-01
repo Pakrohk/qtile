@@ -1,4 +1,4 @@
-from libqtile import widget
+from libqtile import qtile, widget
 
 
 def init_widgets(config: dict):
@@ -44,7 +44,9 @@ def init_widgets(config: dict):
         ),
         widget.Sep(padding=20),
         widget.Net(),
-        widget.Systray(
+        widget.StatusNotifier()
+        if qtile.core.name == "wayland"
+        else widget.Systray(
             background=config["background"],
             padding=5,
             icon_size=config["fontsize"],

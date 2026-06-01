@@ -55,7 +55,7 @@ def init_keys():
         # Kill focused window
         Key([super, "Shift"], "w", lazy.window.kill()),
         # Restart Qtile
-        Key([super, "control"], "r", lazy.restart()),
+        Key([super, "control"], "r", lazy.reload_config()),
         # Shutdown Qtile
         Key([super, "control"], "q", lazy.shutdown()),
     ]

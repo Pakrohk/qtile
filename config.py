@@ -3,7 +3,7 @@ import os
 import subprocess
 
 #  qtile built-in libraries
-from libqtile import bar, hook
+from libqtile import bar, hook, qtile
 from libqtile.config import Screen
 
 # import bindings Modules
@@ -25,9 +25,22 @@ from widgets.top import init_widgets
 # Set up the hooks
 @hook.subscribe.startup_once
 def autostart():
+    # Notification daemon
     subprocess.Popen("dunst")
-    subprocess.Popen(["picom", "-b"])
-    subprocess.Popen(["greenclip", "daemon"])
+
+    # Compositor (Wayland-native apps don't need picom)
+    # picom is X11-only. For Wayland, the compositor is built into Qtile.
+    if qtile.core.name == "x11":
+        subprocess.Popen(["picom", "-b"])
+
+    # Clipboard manager
+    # greenclip is X11-only. cliphist is a good Wayland alternative.
+    if qtile.core.name == "wayland":
+        subprocess.Popen(["wl-paste", "--type", "text", "--watch", "cliphist", "store"])
+        subprocess.Popen(["wl-paste", "--type", "image", "--watch", "cliphist", "store"])
+    else:
+        subprocess.Popen(["greenclip", "daemon"])
+
     os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"
     subprocess.Popen("lxqt-policykit-agent")
     subprocess.Popen("nm-applet")
@@ -68,11 +81,8 @@ def init_bar():
         24,
         opacity=0.66,
         background=colors["background"],
-        floating=True,  # allow the bar to have a shadow effect
         border_width=0,  # remove the default border
-        margin=[0, 5, 5, 10],  # add some margin for the shadow effect
-        draw_shadow=True,  # enable the shadow effect
-        shadow_offset=[0, 3],  # set the shadow offset
+        margin=[0, 5, 5, 10],  # add some margin
     )
 
 

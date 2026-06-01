@@ -1,3 +1,4 @@
 #!/bin/bash
 
-rofi -show drun -theme ~/.config/qtile/themes/rofi/dracula_demnu_style.rasi
+THEME="$HOME/.config/qtile/themes/rofi/dracula_demnu_style.rasi"
+rofi -show drun -theme "$THEME"

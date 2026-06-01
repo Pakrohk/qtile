@@ -28,24 +28,40 @@ done
 # If -x option is given and the path does not exist, create it
 [ $SAVE_SS -eq 1 ] && [ ! -d "${SAVE_SS_DIR}" ] && mkdir -p "${SAVE_SS_DIR}"
 
-# If -s option is given, add the -s option to $TAGS
-[ $SELECT -eq 1 ] && TAGS="-s"
-
 # Wait for the timer, if specified
 sleep "$TIMER"
 
-# Capture the screenshot
-maim $TAGS -m "$QUALITY" "${SAVE_SS_DIR}/${NAME_SS}" || exit 2
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+    # Wayland screenshot using grim and slurp
+    if [ $SELECT -eq 1 ]; then
+        GEOM=$(slurp)
+        [ -z "$GEOM" ] && exit 1
+        grim -g "$GEOM" "${SAVE_SS_DIR}/${NAME_SS}" || exit 2
+    else
+        grim "${SAVE_SS_DIR}/${NAME_SS}" || exit 2
+    fi
 
-# Copy the screenshot to clipboard, if requested
+    # Copy to clipboard if requested
+    if [ $COPY_SS -eq 1 ]; then
+        wl-copy < "${SAVE_SS_DIR}/${NAME_SS}"
+    fi
+else
+    # X11 screenshot using maim
+    [ $SELECT -eq 1 ] && TAGS="-s"
+    maim $TAGS -m "$QUALITY" "${SAVE_SS_DIR}/${NAME_SS}" || exit 2
+
+    # Copy to clipboard if requested
+    if [ $COPY_SS -eq 1 ]; then
+        xclip -selection clipboard -target image/png -i "${SAVE_SS_DIR}/${NAME_SS}"
+    fi
+fi
+
+# Determine what to show in notification
 if [ $SAVE_SS -eq 1 ] && [ $COPY_SS -eq 1 ]; then
-    xclip -selection clipboard -target image/png -i "${SAVE_SS_DIR}/${NAME_SS}"
     SHOW="$(echo "${SAVE_SS_DIR}" | sed -e "s|${HOME}|~|g")/${NAME_SS} (+CLIPBOARD)"
-# Remove the screenshot file, if it's not saved and only copied to clipboard
 elif [ $SAVE_SS -eq 0 ] && [ $COPY_SS -eq 1 ]; then
     rm "${SAVE_SS_DIR}/${NAME_SS}"
     SHOW="CLIPBOARD"
-# Show the saved screenshot, if it's saved and not copied to clipboard
 elif [ $SAVE_SS -eq 1 ] && [ $COPY_SS -eq 0 ]; then
     SHOW="$(echo "${SAVE_SS_DIR}" | sed -e "s|${HOME}|~|g")/${NAME_SS}"
 fi
