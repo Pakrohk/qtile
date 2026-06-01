@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# X11 Compositor Toggle (picom)
+
+if pgrep -x "picom" > /dev/null; then
+    killall picom
+    notify-send "Compositor" "Picom disabled"
+else
+    picom -b
+    notify-send "Compositor" "Picom enabled"
+fi

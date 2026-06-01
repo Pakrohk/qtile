@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Visual Scaling Menu (DPI for X11, Scale for Wayland)
+
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+    # Wayland scaling
+    # Get active outputs
+    OUTPUTS=$(wlr-randr | grep -v '^[[:space:]]' | cut -d' ' -f1)
+
+    OPTIONS="Scale 1.0\nScale 1.25\nScale 1.5\nScale 2.0"
+    CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -p "Wayland Scale")
+
+    case "$CHOICE" in
+        "Scale 1.0")  SCALE=1 ;;
+        "Scale 1.25") SCALE=1.25 ;;
+        "Scale 1.5")  SCALE=1.5 ;;
+        "Scale 2.0")  SCALE=2 ;;
+        *) exit 1 ;;
+    esac
+
+    for OUT in $OUTPUTS; do
+        wlr-randr --output "$OUT" --scale "$SCALE"
+    done
+    # Trigger qtile reconfiguration if needed (though wlr-randr should be handled by screen_change hook)
+else
+    # X11 DPI scaling
+    OPTIONS="DPI 96\nDPI 120\nDPI 144\nDPI 192"
+    CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -p "X11 DPI")
+
+    case "$CHOICE" in
+        "DPI 96")  DPI=96 ;;
+        "DPI 120") DPI=120 ;;
+        "DPI 144") DPI=144 ;;
+        "DPI 192") DPI=192 ;;
+        *) exit 1 ;;
+    esac
+
+    echo "Xft.dpi: $DPI" > ~/.Xresources
+    xrdb -merge ~/.Xresources
+
+    notify-send "DPI updated to $DPI" "Qtile config will be reloaded. Some apps may require restart/re-login."
+    # Use qtile's reload config via command line if possible or just notify
+    qtile cmd-obj -o cmd -f reload_config
+fi

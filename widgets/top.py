@@ -1,4 +1,5 @@
-from libqtile import qtile, widget
+from libqtile import qtile, widget, lazy
+from bindings.vars import power_menu
 
 
 def init_widgets(config: dict):
@@ -80,6 +81,15 @@ def init_widgets(config: dict):
                 fontsize=config["fontsize"],
                 foreground=config["foreground"],
                 background=config["background"],
+            ),
+            widget.TextBox(
+                text="⏻",
+                font=config["font"],
+                fontsize=config["fontsize"],
+                foreground=config["red"],
+                background=config["background"],
+                mouse_callbacks={"Button1": lazy.spawn(power_menu)},
+                padding=10,
             ),
         ]
     )
