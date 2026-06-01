@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Get the current volume
-current_volume=$(amixer get Master | awk 'flag==1{exit} /%/ {print $5; flag=1}' | tr -d '[]')
+# Unified Volume Controller (pactl)
+# Works for both X11 and Wayland via PipeWire/PulseAudio
 
 # Get the action from the first argument
 action="$1"
 
 # Get the amount from the second argument, if provided
-amount="${low:-5}"
+amount="${2:-5}"
 
 # Check if a notification id exists
 if [ -f /tmp/volume_notification_id ]; then
@@ -16,53 +16,48 @@ else
 	notification_id=""
 fi
 
+# Function to get current volume
+get_volume() {
+    pactl get-sink-volume @DEFAULT_SINK@ | grep -Po '[0-9]+(?=%)' | head -n 1
+}
+
+# Function to check if muted
+is_muted() {
+    pactl get-sink-mute @DEFAULT_SINK@ | grep -q "yes"
+}
+
+# Function to notify
+notify_vol() {
+    local msg="$1"
+    local vol=$(get_volume)
+    notification_id=$(dunstify -u low -t 3000 -r 9991 'Volume' "$msg $vol%")
+    echo "$notification_id" >/tmp/volume_notification_id
+}
+
 case "$action" in
 "-u")
-	# Increase the volume by the given amount
-	amixer set Master "${amount}%+"
-	if amixer get Master | grep -q "\[off\]"; then
-		notification_id=$(dunstify -u low -t 3000 'Volume increased' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
-	else
-		notification_id=$(dunstify -u low -t 3000 'Volume increased' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
-	fi
+    pactl set-sink-volume @DEFAULT_SINK@ +"${amount}%"
+    notify_vol "Increased to"
 	;;
 "-d")
-	# Decrease the volume by the given amount
-	amixer set Master "${amount}%-"
-	if amixer get Master | grep -q "\[off\]"; then
-		notification_id=$(dunstify -u low -t 3000 'Volume decreased' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
-	else
-		notification_id=$(dunstify -u low -t 3000 'Volume decreased' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
-	fi
+    pactl set-sink-volume @DEFAULT_SINK@ -"${amount}%"
+    notify_vol "Decreased to"
 	;;
 "-s")
-	# Set the volume to the given value
-	amixer set Master "${amount}%"
-	if amixer get Master | grep -q "\[off\]"; then
-		notification_id=$(dunstify -u low -t 3000 'Volume set' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
-	else
-		notification_id=$(dunstify -u low -t 3000 'Volume set' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
-	fi
+    pactl set-sink-volume @DEFAULT_SINK@ "${amount}%"
+    notify_vol "Set to"
 	;;
 "-t")
-	# Toggle mute/unmute
-	amixer set Master toggle >/dev/null && sleep 0.1
-	if amixer get Master | grep -q "\[off\]"; then
-		notification_id=$(dunstify -u low -t 3000 'Volume muted' 'Your system volume is now muted')
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+    if is_muted; then
+		notification_id=$(dunstify -u low -t 3000 -r 9991 'Volume' 'Muted')
 		echo "$notification_id" >/tmp/volume_notification_id
 	else
-		notification_id=$(dunstify -u low -t 3000 'Volume unmuted' "Your system volume changed to $current_volume%")
-		echo "$notification_id" >/tmp/volume_notification_id
+        notify_vol "Unmuted,"
 	fi
 	;;
 *)
-	echo "Usage: volume_controller.sh [-u | -d | -s | -t] [amount]"
+	echo "Usage: volume_controller [-u | -d | -s | -t] [amount]"
 	echo "-u: Increase volume by [amount] (default: 5)"
 	echo "-d: Decrease volume by [amount] (default: 5)"
 	echo "-s: Set volume to [amount]"

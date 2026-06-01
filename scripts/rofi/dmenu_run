@@ -1,4 +1,6 @@
 #!/bin/bash
 
-rofi -show run -theme ~/.config/qtile/themes/rofi/dracula_demnu_style.rasi
+# Define the theme path
+THEME="$HOME/.config/qtile/themes/rofi/dracula_demnu_style.rasi"
 
+rofi -show run -theme "$THEME"

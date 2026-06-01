@@ -3,7 +3,7 @@ import os
 import subprocess
 
 #  qtile built-in libraries
-from libqtile import bar, hook
+from libqtile import bar, hook, qtile
 from libqtile.config import Screen
 
 # import bindings Modules
@@ -25,26 +25,43 @@ from widgets.top import init_widgets
 # Set up the hooks
 @hook.subscribe.startup_once
 def autostart():
+    # Notification daemon
     subprocess.Popen("dunst")
-    subprocess.Popen(["picom", "-b"])
-    subprocess.Popen(["greenclip", "daemon"])
+
+    # Backend-specific startup
+    if qtile.core.name == "x11":
+        # Compositor
+        subprocess.Popen(["picom", "-b"])
+        # Clipboard manager
+        subprocess.Popen(["greenclip", "daemon"])
+    elif qtile.core.name == "wayland":
+        # Clipboard manager
+        subprocess.Popen(["wl-paste", "--type", "text", "--watch", "cliphist", "store"])
+        subprocess.Popen(["wl-paste", "--type", "image", "--watch", "cliphist", "store"])
+
     os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"
     subprocess.Popen("lxqt-policykit-agent")
     subprocess.Popen("nm-applet")
+
+
+# Monitor hotplug handling
+@hook.subscribe.screen_change
+def on_screen_change():
+    qtile.reconfigure_screens()
 
 
 # Set your default widget styles
 colors = Dracula()
 widgets_themes = dict(
     font="FantasqueSansMono Nerd Font Mono",
-    fontsize=18,
+    fontsize=14,  # Clean, spectrwm-like font size
 )
 
 # Merge the theme dictionary with the widgets_themes dictionary
 widgets_themes.update(colors)
 
 layoutConfig = dict(
-    margin=[5, 2, 2, 5],
+    margin=8,  # Increased margin for "spacious" feel
     border_width=2,
     border_focus=colors["pink"],
     border_normal=colors["cyan"],
@@ -65,14 +82,11 @@ group_mappings = init_app_rules()
 def init_bar():
     return bar.Bar(
         init_widgets(widgets_themes),
-        24,
-        opacity=0.66,
+        28,  # Modern bar height
+        opacity=0.95,
         background=colors["background"],
-        floating=True,  # allow the bar to have a shadow effect
-        border_width=0,  # remove the default border
-        margin=[0, 5, 5, 10],  # add some margin for the shadow effect
-        draw_shadow=True,  # enable the shadow effect
-        shadow_offset=[0, 3],  # set the shadow offset
+        border_width=0,
+        margin=[0, 0, 0, 0],
     )
 
 

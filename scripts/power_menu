@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Power Management Menu with Confirmation
+
+OPTIONS="Lock\nSleep\nReboot\nShutdown"
+CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -p "Power" -theme-str 'window {width: 15%;}')
+
+# Function for confirmation
+confirm_action() {
+    local action="$1"
+    local res=$(echo -e "No\nYes" | rofi -dmenu -p "Confirm $action?")
+    [ "$res" = "Yes" ]
+}
+
+case "$CHOICE" in
+    "Lock")
+        if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+            swaylock || loginctl lock-session
+        else
+            betterlockscreen -l || dm-tool lock || xset dpms force off
+        fi
+        ;;
+    "Sleep")
+        systemctl suspend
+        ;;
+    "Reboot")
+        if confirm_action "Reboot"; then
+            systemctl reboot
+        fi
+        ;;
+    "Shutdown")
+        if confirm_action "Shutdown"; then
+            systemctl poweroff
+        fi
+        ;;
+    *)
+        exit 1
+        ;;
+esac

@@ -1,4 +1,6 @@
-from libqtile import widget
+from libqtile import qtile, widget, lazy
+from .power_menu import PowerMenu
+from .scaling_menu import ScalingMenu
 
 
 def init_widgets(config: dict):
@@ -44,32 +46,58 @@ def init_widgets(config: dict):
         ),
         widget.Sep(padding=20),
         widget.Net(),
-        widget.Systray(
-            background=config["background"],
-            padding=5,
-            icon_size=config["fontsize"],
-        ),
-        widget.PulseVolume(
-            background=config["background"],
-            foreground=config["foreground"],
-            font=config["font"],
-            emoji=True,
-        ),
-        widget.Notify(
-            fontsize=16,
-            background=config["background"],
-            foreground=config["foreground"],
-            default_timeout=5,
-            markup=True,
-            margin=5,
-        ),
-        widget.Clock(
-            format=" %I:%M%p",
-            update_interval=1,
-            font=config["font"],
-            fontsize=config["fontsize"],
-            foreground=config["foreground"],
-            background=config["background"],
-        ),
     ]
+
+    import os
+    if os.environ.get("WAYLAND_DISPLAY"):
+        widgets.append(widget.StatusNotifier())
+    else:
+        widgets.append(
+            widget.Systray(
+                background=config["background"],
+                padding=5,
+                icon_size=config["fontsize"],
+            )
+        )
+
+    widgets.extend(
+        [
+            widget.PulseVolume(
+                background=config["background"],
+                foreground=config["foreground"],
+                font=config["font"],
+                emoji=True,
+            ),
+            widget.Notify(
+                fontsize=16,
+                background=config["background"],
+                foreground=config["foreground"],
+                default_timeout=5,
+                markup=True,
+                margin=5,
+            ),
+            widget.Clock(
+                format=" %I:%M%p",
+                update_interval=1,
+                font=config["font"],
+                fontsize=config["fontsize"],
+                foreground=config["foreground"],
+                background=config["background"],
+            ),
+            ScalingMenu(
+                font=config["font"],
+                fontsize=config["fontsize"],
+                foreground=config["cyan"],
+                background=config["background"],
+                padding=10,
+            ),
+            PowerMenu(
+                font=config["font"],
+                fontsize=config["fontsize"],
+                foreground=config["red"],
+                background=config["background"],
+                padding=10,
+            ),
+        ]
+    )
     return widgets

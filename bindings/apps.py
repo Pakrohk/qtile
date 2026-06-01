@@ -1,14 +1,22 @@
 # built in libs
+from libqtile import qtile
 from libqtile.config import Key
 from libqtile.lazy import lazy
 
 # Modules and Others Config files
-from .vars import (app_menu, browser, clipboard, file_manager, home,
-                   print_screen, qt5_config, screenshot, shell_menu, super,
-                   term, win_selector)
+from .vars import (app_menu, browser, file_manager, home, print_screen,
+                   qt5_config, scaling_menu, screenshot, shell_menu, super,
+                   term, toggle_compositor, win_selector)
 
 
 def init_apps_run():
+    # Use lazy.spawn with a shell conditional for clipboard to avoid load-time qtile.core issues
+    clipboard = (
+        "bash -c 'if [ \"$XDG_SESSION_TYPE\" = \"wayland\" ]; "
+        "then cliphist list | rofi -dmenu -p \"Clipboard\" | cliphist decode | wl-copy; "
+        "else rofi -modi \"clipboard:greenclip print\" -show clipboard; fi'"
+    )
+
     keys = [
         Key([super], "Return", lazy.spawn(term)),
         Key([super], "b", lazy.spawn(browser)),
@@ -18,8 +26,10 @@ def init_apps_run():
         Key([super], "v", lazy.spawn(clipboard)),
         Key([super], "e", lazy.spawn(file_manager)),
         Key([super], "q", lazy.spawn(qt5_config)),
-        Key([], print_screen, lazy.spawn(f"{screenshot} -xc {home}/Pictures/")),
-        Key([super], print_screen, lazy.spawn(f"{screenshot} -xsc {home}/Pictures/")),
+        Key([super], "s", lazy.spawn(scaling_menu)),
+        Key([super], "c", lazy.spawn(toggle_compositor)),
+        Key([], print_screen, lazy.spawn(f"{screenshot} -sc")),
+        Key(["shift"], print_screen, lazy.spawn(f"{screenshot}")),
     ]
 
     return keys

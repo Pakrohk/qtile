@@ -5,7 +5,7 @@ from libqtile.lazy import lazy
 # Modules and Others Config files
 from layouts.bsp import resize_down, resize_left, resize_right, resize_up
 
-from .vars import alt, super, volume_controller
+from .vars import alt, help_menu, super, toggle_compositor, volume_controller
 
 
 # Define keybindings
@@ -52,10 +52,14 @@ def init_keys():
         Key([], "XF86AudioLowerVolume", lazy.spawn(f"{volume_controller} -d 5")),
         Key([], "XF86AudioRaiseVolume", lazy.spawn(f"{volume_controller} -u 5")),
         Key([], "XF86AudioMute", lazy.spawn(f"{volume_controller} -t")),
+        # Compositor Toggle (X11)
+        Key([super, "Shift"], "c", lazy.spawn(toggle_compositor)),
+        # Help Menu
+        Key([], "F1", lazy.spawn(help_menu)),
         # Kill focused window
         Key([super, "Shift"], "w", lazy.window.kill()),
         # Restart Qtile
-        Key([super, "control"], "r", lazy.restart()),
+        Key([super, "control"], "r", lazy.reload_config()),
         # Shutdown Qtile
         Key([super, "control"], "q", lazy.shutdown()),
     ]
