@@ -16,12 +16,6 @@ volume_controller = f"{home}/.config/qtile/scripts/volume_controller"
 
 # set the varible apps
 term = "alacritty"
-# Clipboard command depends on the session type
-clipboard = (
-    "bash -c 'if [ \"$XDG_SESSION_TYPE\" = \"wayland\" ]; "
-    "then cliphist list | rofi -dmenu -p \"Clipboard\" | cliphist decode | wl-copy; "
-    "else rofi -modi \"clipboard:greenclip print\" -show clipboard; fi'"
-)
 browser = "firefox"
 file_manager = "pcmanfm-qt"
 qt5_config = "qt5ct"

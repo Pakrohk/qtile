@@ -44,34 +44,43 @@ def init_widgets(config: dict):
         ),
         widget.Sep(padding=20),
         widget.Net(),
-        widget.StatusNotifier()
-        if qtile.core.name == "wayland"
-        else widget.Systray(
-            background=config["background"],
-            padding=5,
-            icon_size=config["fontsize"],
-        ),
-        widget.PulseVolume(
-            background=config["background"],
-            foreground=config["foreground"],
-            font=config["font"],
-            emoji=True,
-        ),
-        widget.Notify(
-            fontsize=16,
-            background=config["background"],
-            foreground=config["foreground"],
-            default_timeout=5,
-            markup=True,
-            margin=5,
-        ),
-        widget.Clock(
-            format=" %I:%M%p",
-            update_interval=1,
-            font=config["font"],
-            fontsize=config["fontsize"],
-            foreground=config["foreground"],
-            background=config["background"],
-        ),
     ]
+
+    if qtile.core.name == "wayland":
+        widgets.append(widget.StatusNotifier())
+    else:
+        widgets.append(
+            widget.Systray(
+                background=config["background"],
+                padding=5,
+                icon_size=config["fontsize"],
+            )
+        )
+
+    widgets.extend(
+        [
+            widget.PulseVolume(
+                background=config["background"],
+                foreground=config["foreground"],
+                font=config["font"],
+                emoji=True,
+            ),
+            widget.Notify(
+                fontsize=16,
+                background=config["background"],
+                foreground=config["foreground"],
+                default_timeout=5,
+                markup=True,
+                margin=5,
+            ),
+            widget.Clock(
+                format=" %I:%M%p",
+                update_interval=1,
+                font=config["font"],
+                fontsize=config["fontsize"],
+                foreground=config["foreground"],
+                background=config["background"],
+            ),
+        ]
+    )
     return widgets

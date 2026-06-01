@@ -28,18 +28,15 @@ def autostart():
     # Notification daemon
     subprocess.Popen("dunst")
 
-    # Compositor (Wayland-native apps don't need picom)
-    # picom is X11-only. For Wayland, the compositor is built into Qtile.
     if qtile.core.name == "x11":
+        # Compositor
         subprocess.Popen(["picom", "-b"])
-
-    # Clipboard manager
-    # greenclip is X11-only. cliphist is a good Wayland alternative.
-    if qtile.core.name == "wayland":
+        # Clipboard manager
+        subprocess.Popen(["greenclip", "daemon"])
+    elif qtile.core.name == "wayland":
+        # Clipboard manager
         subprocess.Popen(["wl-paste", "--type", "text", "--watch", "cliphist", "store"])
         subprocess.Popen(["wl-paste", "--type", "image", "--watch", "cliphist", "store"])
-    else:
-        subprocess.Popen(["greenclip", "daemon"])
 
     os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"
     subprocess.Popen("lxqt-policykit-agent")
